@@ -99,7 +99,7 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 data "archive_file" "this" {
-  source_dir       = "${path.module}/source/lambda_function/main.py"
+  source_file      = "${path.module}/source/lambda_function/main.py"
   output_path      = "${local.lambda_slack_notify_name}.zip"
   output_file_mode = "0666"
   type             = "zip"
@@ -110,10 +110,11 @@ resource "aws_lambda_function" "this" {
   function_name    = local.lambda_slack_notify_name
   role             = aws_iam_role.this.arn
   handler          = "main.lambda_handler"
-  runtime          = "python3.9"
-  timeout          = 300
+  runtime          = var.runtime
+  timeout          = var.timeout
   filename         = data.archive_file.this.output_path
   source_code_hash = data.archive_file.this.output_base64sha256
+  layers           = var.layers
 
   environment {
     variables = {
