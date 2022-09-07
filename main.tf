@@ -99,7 +99,7 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 data "archive_file" "this" {
-  source_dir       = "${path.module}/source/"
+  source_dir       = "${path.module}/source/lambda_function/main.py"
   output_path      = "${local.lambda_slack_notify_name}.zip"
   output_file_mode = "0666"
   type             = "zip"

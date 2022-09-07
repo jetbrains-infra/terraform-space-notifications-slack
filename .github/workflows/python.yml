@@ -1,0 +1,32 @@
+name: "Python"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  tests:
+    name: "Tests"
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        working-directory: ./source
+        run: |
+          python -VV
+          python -m pip install -r requirements.txt
+      - name: Run UnitTest ${{ matrix.python-version }}
+        working-directory: ./source
+        run: python -m unittest
+        env:
+          AWS_DEFAULT_REGION: us-east-1
