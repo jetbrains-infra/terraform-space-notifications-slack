@@ -4,10 +4,18 @@ locals {
 variable "enable_lambda" {
   type = bool
 }
-variable "name" {}
-variable "slack_channel" {}
-variable "slack_username" {}
-variable "slack_webhook" {}
+variable "name" {
+  type = string
+}
+variable "slack_channel" {
+  type = string
+}
+variable "slack_username" {
+  type = string
+}
+variable "slack_webhook" {
+  type = string
+}
 
 variable "runtime" {
   description = "Lambda Function runtime"
