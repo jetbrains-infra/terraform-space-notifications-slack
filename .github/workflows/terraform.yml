@@ -7,22 +7,33 @@ on:
   pull_request:
 
 jobs:
-  terraform:
-    name: "Terraform"
+  terraform-fmt:
+    name: "Format"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
         with:
-          # terraform_version: 0.13.0:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+          terraform_version: ~1.0.8
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check
+
+  terraform-validate:
+    name: "Validate"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ~1.0.8
 
       - name: Terraform Init
         id: init
@@ -32,33 +43,32 @@ jobs:
         id: validate
         run: terraform validate -no-color
 
+  terraform-lint:
+    name: "Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - uses: terraform-linters/setup-tflint@v2
         name: Setup TFLint
         with:
           tflint_version: latest
 
-      - name: Run TFLint
+      - name: Terraform Lint
         id: lint
         run: |
           tflint --version
           tflint --init
           tflint -f compact
 
-      - uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-            #### Terraform Linter 🔎\`${{ steps.lint.outcome }}\`
-            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
+  terraform-sec:
+    name: "Security"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Terraform Security
+        id: tfsec
+        uses: aquasecurity/tfsec-action@v1.0.2
